@@ -1,0 +1,123 @@
+/**
+
+HUEL_ACM队的队长给出了一个序列，想让学妹帮队长干活，作为学妹（或者想帮助某个漂亮的学妹）的你需要处理如下两种情况。
+
+"C a b c"表示给[a, b]区间中的值全部增加c (-10000 ≤ c ≤ 10000)。
+
+"Q a b" 询问[a, b]区间中所有值的和。
+
+Input
+第一行包含两个整数N, Q。1 ≤ N,Q ≤ 100000.
+
+第二行包含n个整数，表示初始的序列A (-1000000000 ≤ Ai ≤ 1000000000)。
+
+接下来Q行询问，格式如题目描述。
+
+Output
+对于每一个Q开头的询问，你需要输出相应的答案，每个答案一行。
+
+Sample Input
+10 5
+1 2 3 4 5 6 7 8 9 10
+Q 4 4
+Q 1 10
+Q 2 4
+C 3 6 3
+Q 2 4
+Sample Output
+4
+55
+9
+15
+
+题目大意：有两种操作，一种是将某一区间加上一个数，另一种是输出一个区间的值；
+
+解题思路：线段树维护区间和，加懒标记优化时间。
+
+#include<iostream>
+using namespace std;
+typedef long long ll;
+const int max_n=1e5;
+
+struct node{
+	ll v,la;
+	int l,r;
+}t[8*max_n+10];
+
+int a[max_n+10];
+int n,m;
+
+void creat(int i,int l,int r)
+{
+	t[i].l=l;
+	t[i].r=r;
+	t[i].la=0;
+	if(l==r){
+		t[i].v=a[l];
+		return ;
+	}
+	int mid=(l+r)>>1;
+	creat(i<<1,l,mid);
+	creat(i<<1|1,mid+1,r);
+	t[i].v=t[i<<1].v+t[i<<1|1].v; 
+}
+
+void push_down(int i)
+{
+	if(t[i].la){
+		ll c=t[i].la,mid=(t[i].l+t[i].r)>>1;
+		t[i<<1].v+=c*(mid-t[i].l+1);
+		t[i<<1|1].v+=c*(t[i].r-mid);
+		t[i<<1].la+=c;
+		t[i<<1|1].la+=c;
+		t[i].la=0; 
+	}
+}
+
+void update(int i,int x,int y,int s)
+{
+	if(x>t[i].r||y<t[i].l)return ;
+	if(x<=t[i].l&&y>=t[i].r){
+		t[i].v+=(t[i].r-t[i].l+1)*s;
+		t[i].la+=s;
+		return ;
+	}
+	push_down(i);
+	update(i<<1,x,y,s);
+	update(i<<1|1,x,y,s);
+	t[i].v=t[i<<1].v+t[i<<1|1].v;
+}
+
+ll query(int i,int x,int y)
+{
+	if(x>t[i].r||y<t[i].l)return 0;
+	if(x<=t[i].l&&y>=t[i].r){
+		return t[i].v;
+	}
+	push_down(i);
+	ll s=0;
+	s+=query(i<<1,x,y);
+	s+=query(i<<1|1,x,y);
+	return s;
+}
+
+int main()
+{
+	cin>>n>>m;
+	for(int i=1;i<=n;i++)cin>>a[i];
+	creat(1,1,n);
+	for(int i=0;i<m;i++){
+		char c;
+		int x,y;
+		cin>>c>>x>>y;
+		if(c=='Q'){
+			cout<<query(1,x,y)<<endl;
+		} else{
+			int z;
+			cin>>z;
+			update(1,x,y,z);
+		}
+	}
+}
+
+**/

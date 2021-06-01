@@ -27,8 +27,10 @@ Sample Output
 
 题目大意：给出一个序列中的相对位置，让你输出它本来的序列；
 
-解题思路：可以直接从最后一位开始模拟，就是如果它前面有m个数比它小，那么我们就从1~n中没有取到过的数中找第m+1个没有被使用过的数，将它作为当前位置的数，最后，唯一没有被标记过的数，就是第一个数。
+解题思路：解法一：可以直接从最后一位开始模拟，就是如果它前面有m个数比它小，那么我们就从1~n中没有取到过的数中找第m+1个没有被使用过的数，将它作为当前位置的数，最后，唯一没有被标记过的数，就是第一个数。
 （写完之后发现这好像是一个树状数组题，明天去想想树状数组的解法）
+
+解法二：树状数组，用一个树状数组维护当前数据的排名，然后每次从第n个数开始，二分找树状数组中排名=当前数前比当前数小的的数+1的数，然后更新树状数组中的排名。
 
 **/
 
@@ -58,4 +60,62 @@ int main()
 		if(!vis[i])ans[0]=i;
 	}
 	for(int i=0;i<n;i++)cout<<ans[i]<<endl;
+}
+
+#include<iostream>
+using namespace std;
+const int max_n= 80010;
+
+int a[max_n],t[max_n],ans[max_n];
+int n;
+
+int lowbit(int x)
+{
+	return x&(-x);
+}
+
+void update(int x,int s)
+{
+	for(;x<=n;x+=lowbit(x)){
+		t[x]+=s;
+	}
+}
+
+int query(int x)
+{
+	int s=0;
+	for(;x;x-=lowbit(x)){
+		s+=t[x];
+	}
+	return s;
+}
+
+int binary(int x)
+{
+	int l=1,r=n;
+	while(l<r) {
+		int mid=(l+r)>>1;
+		if(query(mid)<x)l=mid+1;
+		else r=mid; 
+	}
+	return l;
+}
+
+int main()
+{
+	cin>>n;
+	for(int i=2;i<=n;i++){
+		cin>>a[i];
+	}
+	
+	for(int i=1;i<=n;i++){
+		t[i]=lowbit(i);
+	}
+	for(int i=n;i;i--){
+		int cnt=binary(a[i]+1);
+		ans[i]=cnt;
+		update(cnt,-1);
+	}
+	for(int i=1;i<=n;i++)cout<<ans[i]<<endl;
+	return 0;
 }

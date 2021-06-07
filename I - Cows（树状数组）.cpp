@@ -72,3 +72,69 @@ Huge input and output,scanf and printf is recommended.
 的情况，然后输入输出用scanf，printf（不然会超时）
 
 **/
+#include<iostream>
+#include<algorithm>
+#include<cstring>
+using namespace std;
+const int max_n=1e5+10; 
+
+struct node{
+	int l,r;
+	int num;
+}a[max_n]; 
+
+int t[max_n],ans[max_n];
+int n;
+
+bool cmp(node a,node b)
+{
+	if(a.r==b.r)return a.l<b.l;
+	return a.r>b.r;
+}
+
+int lowbit(int x)
+{
+	return x&(-x);
+}
+
+void update(int x)
+{
+	for(int i=x;i<=n;i+=lowbit(i)){
+		t[i]++;
+	}
+}
+
+int getsum(int x)
+{
+	int s=0;
+	for(int i=x;i;i-=lowbit(i)){
+		s+=t[i];
+	}
+	return s;
+}
+
+int main()
+{
+	while(scanf("%d",&n)&&n){
+		for(int i=1;i<=n;i++){
+			scanf("%d%d",&a[i].l,&a[i].r);
+			a[i].num=i; 
+		}
+		sort(a+1,a+n+1,cmp);
+		memset(t,0,sizeof t);
+		ans[a[1].num]=0;
+		update(a[1].l+1);
+		for(int i=2;i<=n;i++) {
+			if(a[i].l==a[i-1].l&&a[i].r==a[i-1].r) {
+				ans[a[i].num]=ans[a[i-1].num];
+			}else {
+				ans[a[i].num]=getsum(a[i].l+1);
+			}
+			update(a[i].l+1);
+		}
+		for(int i=1;i<=n;i++){
+			printf("%d ",ans[i]);
+		}
+		printf("\n");
+	}	 
+} 
